@@ -26,6 +26,7 @@ const cv=document.getElementById('c'),g=cv.getContext('2d'),W=360,H=540;
 const COL=['#ff7a6b','#ffa94d','#ffd43b','#69db7c','#4dabf7','#9775fa'];
 let hi=0;try{hi=+localStorage.getItem('dusk-hi')||0}catch(e){}
 let st,P,B,bricks;
+const rr=(x,y,w,h,r)=>{g.roundRect?g.roundRect(x,y,w,h,r):g.rect(x,y,w,h)};
 const $=id=>document.getElementById(id);
 function build(){bricks=[];for(let r=0;r<6;r++)for(let c=0;c<8;c++)bricks.push({x:6+c*44,y:60+r*22,w:40,h:18,col:COL[r],pts:(6-r)*10})}
 function reset(){st={score:0,lv:1,lives:3,run:false,over:false,speed:4.2};P={x:W/2,w:72,h:10,y:H-30};build();park()}
@@ -51,8 +52,8 @@ function step(){
 function text(t,y,sz,c){g.fillStyle=c;g.font=`700 ${sz}px sans-serif`;g.textAlign='center';g.fillText(t,W/2,y)}
 function draw(){
  g.clearRect(0,0,W,H);
- bricks.forEach(b=>{g.fillStyle=b.col;g.beginPath();g.roundRect(b.x,b.y,b.w,b.h,4);g.fill()});
- g.fillStyle='#ecebff';g.beginPath();g.roundRect(P.x-P.w/2,P.y,P.w,P.h,5);g.fill();
+ bricks.forEach(b=>{g.fillStyle=b.col;g.beginPath();rr(b.x,b.y,b.w,b.h,4);g.fill()});
+ g.fillStyle='#ecebff';g.beginPath();rr(P.x-P.w/2,P.y,P.w,P.h,5);g.fill();
  g.beginPath();g.arc(B.x,B.y,B.r,0,7);g.fill();
  if(st.over){g.fillStyle='rgba(18,18,43,.78)';g.fillRect(0,0,W,H);text('游戏结束',240,32,'#ecebff');text(`得分 ${st.score}`,280,20,'#ffd43b');text('点一下再来一局',320,15,'#8f8eb5')}
  else if(!st.run)text(st.lv>1?`第 ${st.lv} 关,点一下发球`:'点一下发球',H/2+60,16,'#8f8eb5');
