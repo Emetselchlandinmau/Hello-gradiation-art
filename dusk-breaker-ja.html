@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>夕暮れのブロックブレーク</title>
+<title>夕暮れブロック崩し</title>
 <style>
 :root{--bg:#e9e6f2;--ink:#242347;--dim:#6b6a8c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12122b;--ink:#ecebff;--dim:#8f8eb5}}
@@ -35,7 +35,7 @@ const $=id=>document.getElementById(id);
 function build(){bricks=[];for(let r=0;r<6;r++)for(let c=0;c<8;c++)bricks.push({x:6+c*44,y:60+r*22,w:40,h:18,col:COL[r],pts:(6-r)*10})}
 function reset(){st={score:0,lv:1,lives:3,run:false,over:false,speed:4.2};P={x:W/2,w:72,h:10,y:H-30};build();park()}
 function park(){B={x:P.x,y:P.y-8,vx:0,vy:0,r:6};st.run=false}
-function launch(){await audio();if(st.over){reset();return}if(!st.run){const a=(Math.random()*.6-.3);B.vx=st.speed*Math.sin(a);B.vy=-st.speed*Math.cos(a);st.run=true}}
+function launch(){audio();if(st.over){reset();return}if(!st.run){const a=(Math.random()*.6-.3);B.vx=st.speed*Math.sin(a);B.vy=-st.speed*Math.cos(a);st.run=true}}
 function hud(){$('sc').textContent=st.score;$('lv').textContent=st.lv;$('li').textContent=st.lives;$('hi').textContent=hi}
 function save(){if(st.score>hi){hi=st.score;try{localStorage.setItem('dusk-hi',hi)}catch(e){}}}
 function step(){
@@ -65,7 +65,7 @@ function draw(){
 function loop(){step();draw();requestAnimationFrame(loop)}
 function setX(cx){const r=cv.getBoundingClientRect();P.x=Math.max(P.w/2,Math.min(W-P.w/2,(cx-r.left)/r.width*W))}
 addEventListener('pointermove',e=>setX(e.clientX));
-cv.addEventListener('pointerdown',async e=>{setX(e.clientX);await launch()});
+cv.addEventListener('pointerdown',e=>{setX(e.clientX);launch()});
 addEventListener('keydown',e=>{if(e.key==='ArrowLeft')P.x=Math.max(P.w/2,P.x-24);if(e.key==='ArrowRight')P.x=Math.min(W-P.w/2,P.x+24);if(e.key===' '){e.preventDefault();launch()}});
 let AC,master,bus,dly,vol=.7,G=()=>vol*vol*1.1,on=true,nt=0,sp=0;
 const SD=60/66/4;
@@ -90,7 +90,7 @@ function audio(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioConte
  const cv=AC.createConvolver();cv.buffer=im;const rg=AC.createGain();rg.gain.value=.8;bus.connect(rg);rg.connect(cv);cv.connect(master);
  dly=AC.createDelay(1.5);dly.delayTime.value=.68;const fb=AC.createGain();fb.gain.value=.45;dly.connect(fb);fb.connect(dly);dly.connect(bus);
  nt=AC.currentTime+.1;setInterval(sched,100)}catch(e){AC=null;return}}
- if(AC.state==='suspended')await AC.resume()}
+ if(AC.state==='suspended')AC.resume()}
 function ping(r){if(!AC||!on)return;tone(PN[Math.min(r-1,5)],AC.currentTime,1.2,.04,'sine',.005,1)}
 $('bt').onclick=e=>{on=!on;e.target.textContent='おんがく '+(on?'ON':'OFF');if(on)audio();if(master)master.gain.setTargetAtTime(on?G():0,AC.currentTime,.1);e.target.blur()};
 $('vl').oninput=e=>{vol=e.target.value/100;if(vol>0&&!on){on=true;$('bt').textContent='おんがく ON'}if(master)master.gain.setTargetAtTime(on?G():0,AC.currentTime,.05)};
