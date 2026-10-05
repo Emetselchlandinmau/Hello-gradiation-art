@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>雾港守灯人</title>
+<style>
+:root{--bg:#e4e9e7;--ink:#1c2a31;--dim:#5d6e74;--lamp:#b87a12;--sea:#2d5b60;--card:#d6dedc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16242a;--ink:#dbe5e2;--dim:#8da1a6;--lamp:#e8b04a;--sea:#6fa3a8;--card:#1f3139}}
+:root[data-theme="dark"]{--bg:#16242a;--ink:#dbe5e2;--dim:#8da1a6;--lamp:#e8b04a;--sea:#6fa3a8;--card:#1f3139}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink)}
+body{font-family:"Noto Serif SC","Songti SC","STSong",SimSun,serif;line-height:1.9;font-size:17px}
+main{max-width:38rem;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+h1{font-size:2rem;letter-spacing:.3em;margin:.2em 0 .1em;font-weight:700}
+.sub{color:var(--dim);margin:0 0 1.2rem;font-size:.9rem}
+#st{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);display:flex;gap:1.2rem;flex-wrap:wrap;padding:.6rem 0;border-bottom:1px solid var(--dim);font-size:.9rem;z-index:2}
+#st b{color:var(--lamp)}
+#log p{margin:.9rem 0}
+#log .me{color:var(--sea);font-style:italic;margin:.4rem 0}
+#log .hit{color:#b3402f}
+#log .end{font-size:1.25rem;font-weight:700;letter-spacing:.2em;color:var(--lamp)}
+#ch{display:grid;gap:.5rem;margin-top:1.2rem}
+button{font:inherit;text-align:left;background:var(--card);color:var(--ink);border:0;border-left:4px solid var(--lamp);padding:.7rem 1rem;cursor:pointer;border-radius:0 6px 6px 0}
+button:hover:not(:disabled){background:var(--lamp);color:var(--bg)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:2px solid var(--sea);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<h1>雾港守灯人</h1>
+<p class="sub">一个短篇文字冒险,约五分钟。点选项或按数字键行动。</p>
+<div id="st"></div>
+<div id="log" aria-live="polite"></div>
+<div id="ch"></div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+let S,foe;
+function init(){S={hp:10,oil:4,inv:[],f:{}};foe=null;$('#log').innerHTML='';go('start')}
+function say(t,c){const p=document.createElement('p');p.textContent=t;if(c)p.className=c;$('#log').appendChild(p);p.scrollIntoView({block:'end'})}
+function stat(){$('#st').innerHTML=`<span>生命 <b>${S.hp}</b>/10</span><span>灯油 <b>${S.oil}</b></span><span>物品 <b>${S.inv.join('、')||'无'}</b></span>`}
+function show(c){
+  const box=$('#ch');box.innerHTML='';stat();
+  c.forEach((x,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${x.l}`;b.disabled=!!x.off;
+    b.onclick=()=>{say('› '+x.l,'me');x.f()};box.appendChild(b)});
+}
+function go(id){const s=scenes[id]();say(s.t,s.cls);show(s.c)}
+function end(t,title){say(title,'end');say(t);stat();const box=$('#ch');box.innerHTML='';
+  const b=document.createElement('button');b.textContent='1. 重新开始';b.onclick=init;box.appendChild(b)}
+
+const scenes={
+start:()=>({t:'雾港镇。守灯人老周失踪的第三天,灯塔熄灭了。海上传来船笛声,却看不见任何一艘船。你是他的学徒,手里只有一盏提灯。',
+ c:[{l:'去老周的房间',f:()=>go('room')},{l:'去码头',f:()=>go('dock')},{l:'爬上灯塔',f:()=>go('tower')}]}),
+room:()=>{let t;if(!S.f.room){S.f.room=1;S.inv.push('塔门钥匙');S.oil+=2;t='桌上压着一张字条:“雾里的东西怕光,别让它靠近灯。”抽屉里有一把塔门钥匙和两瓶灯油。'}else t='房间里已经没有别的东西了。';
+ return{t,c:[{l:'回到镇口',f:()=>go('start')}]}},
+dock:()=>{let t;if(!S.f.dock){S.f.dock=1;S.inv.push('铜哨');t='老渔夫蹲在缆桩旁。“潮影吃的是黑暗,灯一亮它就现形,但它会先扑向提灯。”他递给你一枚铜哨,“吹响它,它会愣一下。”'}else t='老渔夫摆摆手:“去吧,趁潮还没涨。”';
+ return{t,c:[{l:'回到镇口',f:()=>go('start')}]}},
+tower:()=>{
+ if(!S.inv.includes('塔门钥匙'))return{t:'塔门锁着,铁锁冰凉。也许老周的房间里有钥匙。',c:[{l:'退下去',f:()=>go('start')}]};
+ return{t:'你推开塔门,沿螺旋楼梯向上。灯室里,巨大的灯芯冷得像一块石头。窗外的雾忽然涌进来,聚成一个没有脸的黑影,朝你的提灯伸出手。',
+  c:[{l:'迎战潮影',f:()=>{foe={hp:10,stun:0,whistle:0};fight()}},{l:'先退下去',f:()=>go('start')}]}},
+win:()=>({t:'潮影在光里散成了雾。灯室重新安静下来,只剩下那根冰冷的灯芯。',
+ c:[{l:'点亮灯塔',off:S.oil<1,f:()=>{S.oil--;end('灯光扫过海面,雾被一层层劈开。船笛声一声声靠岸。码头上,你看见老周从一艘小船上走下来,朝你点了点头。','结局:灯亮了')}},
+    {l:'灯油用完了,只能等天亮',off:S.oil>=1,f:()=>end('天亮时雾自己散了。镇上人说,灯塔需要一个新的守灯人。你把钥匙挂回腰间,留了下来。','结局:新的守灯人')}]})
+};
+function fight(){
+ if(foe.hp<=0){say('潮影发出一声长长的叹息,散开了。');return go('win')}
+ show([
+  {l:'挥动提灯(灯油 -1,伤害 4)',off:S.oil<1,f:()=>{S.oil--;foe.hp-=4;say('提灯的光灼穿了黑影,它缩了一下。');turn()}},
+  {l:'抡起扳手(伤害 2 到 3)',f:()=>{const d=rnd(2,3);foe.hp-=d;say(`扳手砸中了它,造成 ${d} 点伤害。`);turn()}},
+  {l:'吹响铜哨(让它愣一回合)',off:!S.inv.includes('铜哨')||foe.whistle,f:()=>{foe.whistle=1;foe.stun=1;say('尖锐的哨声在塔里回荡,潮影僵住了。');turn()}}
+ ]);
+ say(`潮影的体力:${Math.max(foe.hp,0)}/10`);
+}
+function turn(){
+ if(foe.hp>0){
+  if(foe.stun>0){foe.stun--;say('潮影还愣在原地。')}
+  else{const d=rnd(1,3);S.hp-=d;say(`潮影扑了过来,冰冷的雾气刺进你的胸口,失去 ${d} 点生命。`,'hit')}
+ }
+ if(S.hp<=0){stat();return end('你倒在冰冷的石阶上,最后看见窗外有一点微弱的光,也许是你自己的提灯。','结局:雾吞没了你')}
+ fight();
+}
+document.addEventListener('keydown',e=>{const n=parseInt(e.key);const b=document.querySelectorAll('#ch button')[n-1];if(b&&!b.disabled)b.click()});
+init();
+</script>
+</body>
+</html>
